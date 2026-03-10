@@ -4,9 +4,6 @@ Bem-vindo(a) ao projeto prático de Preparação de Dados (Data Prep)!
 
 O objetivo deste laboratório é construir um pipeline de dados puramente em SQL, lendo dados de um banco de dados transacional (Relacional/ERP) e transformando-os em um modelo analítico (Dimensional/Data Warehouse)
 
-[Image of star schema vs snowflake schema]
-.
-
 Aqui, você terá a oportunidade de colocar a mão na massa desenvolvendo scripts de criação de tabelas (DDL) e os processos de extração, transformação e carga (ETL).
 
 ## A Ideia Geral do Projeto
