@@ -1,4 +1,4 @@
-# Projeto Prático: Data Prep & Modelagem Dimensional com PostgreSQL
+]# Projeto Prático: Data Prep & Modelagem Dimensional com PostgreSQL
 
 Bem-vindo(a) ao projeto prático de Preparação de Dados (Data Prep)!
 
