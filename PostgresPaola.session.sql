@@ -1,4 +1,18 @@
--- CREATE SCHEMA IF NOT EXISTS cadastro;
+-- INSERT INTO cadastro.usuarios (nome, email, ativo, data_cadastro, contato, idade)
+-- VALUES (
+--     'Jó',
+--     'jó@email.com',
+--     false,
+--     NOW(),
+--     '12 2222-3333',
+--     35
+-- );
+
+
+
+-- select * from cadastro.usuarios
+
+--CREATE SCHEMA IF NOT EXISTS cadastro;
 -- CREATE SCHEMA IF NOT EXISTS produto;
 -- DROP SCHEMA IF EXISTS cadastro;
 -- DROP SCHEMA IF EXISTS produto;
@@ -11,7 +25,7 @@
 --     data_cadastro TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 -- );
 
-ALTER TABLE cadastro.usuarios 
+-- ALTER TABLE cadastro.usuarios
    -- ADD COLUMN telefone VARCHAR(20)
    -- DROP COLUMN telefone
     -- ALTER COLUMN telefone SET DEFAULT 'NAO INFORMADO';
@@ -25,3 +39,284 @@ ALTER TABLE cadastro.usuarios
     -- ADD COLUMN idade INT NOT NULL
     -- ADD CONSTRAINT maior_idade CHECK (idade >= 18);
     -- DROP CONSTRAINT maior_idade 
+  --  RENAME TO usuarios;
+
+  --ESTRUTURA DO BANCO DE DADOS
+
+-- DROP TABLE IF EXISTS envio CASCADE;
+-- DROP TABLE IF EXISTS pagamento CASCADE;
+-- DROP TABLE IF EXISTS avaliacao_produto CASCADE;
+-- DROP TABLE IF EXISTS item_pedido_personalizacao CASCADE;
+-- DROP TABLE IF EXISTS item_pedido CASCADE;
+-- DROP TABLE IF EXISTS pedido CASCADE;
+-- DROP TABLE IF EXISTS fornecedor_componente CASCADE;
+-- DROP TABLE IF EXISTS produto_componente CASCADE;
+-- DROP TABLE IF EXISTS componente CASCADE;
+-- DROP TABLE IF EXISTS produto_opcao_personalizacao CASCADE;
+-- DROP TABLE IF EXISTS opcao_personalizacao CASCADE;
+-- DROP TABLE IF EXISTS tipo_personalizacao CASCADE;
+-- DROP TABLE IF EXISTS promocao CASCADE;
+-- DROP TABLE IF EXISTS produto CASCADE;
+-- DROP TABLE IF EXISTS fornecedor CASCADE;
+-- DROP TABLE IF EXISTS categoria CASCADE;
+-- DROP TABLE IF EXISTS endereco CASCADE;
+-- DROP TABLE IF EXISTS cliente CASCADE;
+
+-- CLIENTE
+-- CREATE TABLE cliente (
+--     cliente_id INT PRIMARY KEY,
+--     nome VARCHAR(120) NOT NULL,
+--     email VARCHAR(254) NOT NULL UNIQUE,
+--     telefone VARCHAR(20),
+--     cpf CHAR(11) NOT NULL UNIQUE, -- aqui eu estudaria a possibilidade de ser cpf/cnpj com VARCHAR(14) para empresas que querem comprar para seus colaboradores de lembrança ou algo assim
+--     data_cadastro DATE NOT NULL
+-- );
+
+-- ENDERECO
+-- CREATE TABLE endereco (
+--     endereco_id INT PRIMARY KEY,
+--     cliente_id INT NOT NULL,
+--     cep CHAR(8) NOT NULL,
+--     logradouro VARCHAR(150) NOT NULL,
+--     numero VARCHAR(10) NOT NULL,
+--     complemento VARCHAR(100),
+--     bairro VARCHAR(100) NOT NULL,
+--     cidade VARCHAR(100) NOT NULL,
+--     estado CHAR(2) NOT NULL,
+--     tipo_endereco VARCHAR(20) NOT NULL,
+--     endereco_padrao BOOLEAN NOT NULL DEFAULT FALSE,
+--     CONSTRAINT fk_endereco_cliente
+--         FOREIGN KEY (cliente_id) REFERENCES cliente(cliente_id),
+--     CONSTRAINT ck_tipo_endereco
+--         CHECK (tipo_endereco IN ('ENTREGA', 'COBRANCA', 'AMBOS'))
+-- );
+-- -- garante no máximo 1 endereço padrão por cliente
+-- CREATE UNIQUE INDEX uq_endereco_padrao_por_cliente
+--     ON endereco(cliente_id)
+--     WHERE endereco_padrao = TRUE;
+
+-- CATEGORIA
+-- CREATE TABLE categoria (
+--     categoria_id INT PRIMARY KEY,
+--     nome VARCHAR(100) NOT NULL UNIQUE,
+--     descricao TEXT
+-- );
+
+-- FORNECEDOR
+-- CREATE TABLE fornecedor (
+--     fornecedor_id INT PRIMARY KEY,
+--     razao_social VARCHAR(150) NOT NULL,
+--     cnpj CHAR(14) NOT NULL UNIQUE,
+--     email VARCHAR(254),
+--     telefone VARCHAR(20)
+-- );
+
+-- PRODUTO
+-- CREATE TABLE produto (
+--     produto_id INT PRIMARY KEY,
+--     categoria_id INT NOT NULL,
+--     nome VARCHAR(150) NOT NULL,
+--     descricao TEXT,
+--     preco_base NUMERIC(10,2) NOT NULL CHECK (preco_base >= 0),
+--     tipo_produto VARCHAR(20) NOT NULL,
+--     ativo BOOLEAN NOT NULL DEFAULT TRUE,
+--     CONSTRAINT fk_produto_categoria
+--         FOREIGN KEY (categoria_id) REFERENCES categoria(categoria_id),
+--     CONSTRAINT ck_tipo_produto
+--         CHECK (tipo_produto IN ('PRONTA_ENTREGA', 'CUSTOMIZADO'))
+-- );
+
+-- PROMOCAO
+-- CREATE TABLE promocao (
+--     promocao_id INT PRIMARY KEY,
+--     nome VARCHAR(100) NOT NULL,
+--     descricao TEXT,
+--     tipo_desconto VARCHAR(20) NOT NULL,
+--     valor_desconto NUMERIC(10,2) NOT NULL CHECK (valor_desconto >= 0),
+--     data_inicio DATE NOT NULL,
+--     data_fim DATE NOT NULL,
+--     tipo_aplicacao VARCHAR(20) NOT NULL,
+--     produto_id INT,
+--     categoria_id INT,
+--     CONSTRAINT fk_promocao_produto
+--         FOREIGN KEY (produto_id) REFERENCES produto(produto_id),
+--     CONSTRAINT fk_promocao_categoria
+--         FOREIGN KEY (categoria_id) REFERENCES categoria(categoria_id),
+--     CONSTRAINT ck_tipo_desconto
+--         CHECK (tipo_desconto IN ('PERCENTUAL', 'FIXO')),
+--     CONSTRAINT ck_tipo_aplicacao
+--         CHECK (tipo_aplicacao IN ('PRODUTO', 'CATEGORIA', 'GERAL')),
+--     CONSTRAINT ck_datas_promocao
+--         CHECK (data_fim >= data_inicio)
+-- );
+
+-- TIPO PERSONALIZACAO
+-- CREATE TABLE tipo_personalizacao (
+--     tipo_personalizacao_id INT PRIMARY KEY,
+--     nome VARCHAR(100) NOT NULL,
+--     descricao TEXT
+-- );
+
+-- OPCAO PERSONALIZACAO
+-- CREATE TABLE opcao_personalizacao (
+--     opcao_personalizacao_id INT PRIMARY KEY,
+--     tipo_personalizacao_id INT NOT NULL,
+--     nome VARCHAR(100) NOT NULL,
+--     descricao TEXT,
+--     custo_adicional NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (custo_adicional >= 0),
+--     permite_texto_livre BOOLEAN NOT NULL DEFAULT FALSE,
+--     CONSTRAINT fk_opcao_tipo_personalizacao
+--         FOREIGN KEY (tipo_personalizacao_id)
+--         REFERENCES tipo_personalizacao(tipo_personalizacao_id)
+-- );
+
+-- PRODUTO x OPCAO PERSONALIZACAO
+-- CREATE TABLE produto_opcao_personalizacao (
+--     produto_opcao_personalizacao_id INT PRIMARY KEY,
+--     produto_id INT NOT NULL,
+--     opcao_personalizacao_id INT NOT NULL,
+--     obrigatoria BOOLEAN NOT NULL DEFAULT FALSE,
+--     CONSTRAINT fk_pop_produto
+--         FOREIGN KEY (produto_id) REFERENCES produto(produto_id),
+--     CONSTRAINT fk_pop_opcao
+--         FOREIGN KEY (opcao_personalizacao_id)
+--         REFERENCES opcao_personalizacao(opcao_personalizacao_id),
+--     CONSTRAINT uq_produto_opcao UNIQUE (produto_id, opcao_personalizacao_id)
+-- );
+
+-- COMPONENTE
+-- CREATE TABLE componente (
+--     componente_id INT PRIMARY KEY,
+--     nome VARCHAR(100) NOT NULL,
+--     descricao TEXT,
+--     unidade_medida VARCHAR(20) NOT NULL,
+--     quantidade_atual NUMERIC(10,2) NOT NULL CHECK (quantidade_atual >= 0),
+--     quantidade_minima NUMERIC(10,2) NOT NULL CHECK (quantidade_minima >= 0),
+--     data_atualizacao DATE NOT NULL
+-- );
+
+-- PRODUTO x COMPONENTE
+-- CREATE TABLE produto_componente (
+--     produto_componente_id INT PRIMARY KEY,
+--     produto_id INT NOT NULL,
+--     componente_id INT NOT NULL,
+--     quantidade_necessaria NUMERIC(10,2) NOT NULL CHECK (quantidade_necessaria > 0),
+--     CONSTRAINT fk_produto_componente_produto
+--         FOREIGN KEY (produto_id) REFERENCES produto(produto_id),
+--     CONSTRAINT fk_produto_componente_componente
+--         FOREIGN KEY (componente_id) REFERENCES componente(componente_id),
+--     CONSTRAINT uq_produto_componente UNIQUE (produto_id, componente_id)
+-- );
+
+-- FORNECEDOR x COMPONENTE
+-- CREATE TABLE fornecedor_componente (
+--     fornecedor_componente_id INT PRIMARY KEY,
+--     fornecedor_id INT NOT NULL,
+--     componente_id INT NOT NULL,
+--     preco_fornecimento NUMERIC(10,2) NOT NULL CHECK (preco_fornecimento >= 0),
+--     prazo_entrega_dias INT NOT NULL CHECK (prazo_entrega_dias >= 0),
+--     CONSTRAINT fk_fornecedor_componente_fornecedor
+--         FOREIGN KEY (fornecedor_id) REFERENCES fornecedor(fornecedor_id),
+--     CONSTRAINT fk_fornecedor_componente_componente
+--         FOREIGN KEY (componente_id) REFERENCES componente(componente_id),
+--     CONSTRAINT uq_fornecedor_componente UNIQUE (fornecedor_id, componente_id)
+-- );
+
+-- PEDIDO
+-- CREATE TABLE pedido (
+--     pedido_id INT PRIMARY KEY,
+--     cliente_id INT NOT NULL,
+--     endereco_entrega_id INT NOT NULL,
+--     endereco_cobranca_id INT NOT NULL,
+--     data_pedido TIMESTAMP NOT NULL,
+--     status_pedido VARCHAR(30) NOT NULL,
+--     subtotal NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (subtotal >= 0),
+--     valor_desconto NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (valor_desconto >= 0),
+--     valor_frete NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (valor_frete >= 0),
+--     valor_total NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (valor_total >= 0),
+--     CONSTRAINT fk_pedido_cliente
+--         FOREIGN KEY (cliente_id) REFERENCES cliente(cliente_id),
+--     CONSTRAINT fk_pedido_endereco_entrega
+--         FOREIGN KEY (endereco_entrega_id) REFERENCES endereco(endereco_id),
+--     CONSTRAINT fk_pedido_endereco_cobranca
+--         FOREIGN KEY (endereco_cobranca_id) REFERENCES endereco(endereco_id)
+-- );
+
+-- ITEM PEDIDO
+-- CREATE TABLE item_pedido (
+--     item_pedido_id INT PRIMARY KEY,
+--     pedido_id INT NOT NULL,
+--     produto_id INT NOT NULL,
+--     quantidade INT NOT NULL CHECK (quantidade > 0),
+--     preco_base_unitario NUMERIC(10,2) NOT NULL CHECK (preco_base_unitario >= 0),
+--     valor_adicional_personalizacao NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (valor_adicional_personalizacao >= 0),
+--     preco_final_unitario NUMERIC(10,2) NOT NULL CHECK (preco_final_unitario >= 0),
+--     CONSTRAINT fk_item_pedido_pedido
+--         FOREIGN KEY (pedido_id) REFERENCES pedido(pedido_id),
+--     CONSTRAINT fk_item_pedido_produto
+--         FOREIGN KEY (produto_id) REFERENCES produto(produto_id)
+-- );
+
+-- ITEM PEDIDO PERSONALIZACAO
+-- campo promocao_id acrescentado
+-- CREATE TABLE item_pedido_personalizacao (
+--     item_pedido_personalizacao_id INT PRIMARY KEY,
+--     item_pedido_id INT NOT NULL,
+--     tipo_personalizacao_id INT NOT NULL,
+--     opcao_personalizacao_id INT NOT NULL,
+--     promocao_id INT,
+--     texto_digitado VARCHAR(255),
+--     valor_cobrado NUMERIC(10,2) NOT NULL DEFAULT 0 CHECK (valor_cobrado >= 0),
+--     CONSTRAINT fk_ipp_item
+--         FOREIGN KEY (item_pedido_id) REFERENCES item_pedido(item_pedido_id),
+--     CONSTRAINT fk_ipp_tipo
+--         FOREIGN KEY (tipo_personalizacao_id)
+--         REFERENCES tipo_personalizacao(tipo_personalizacao_id),
+--     CONSTRAINT fk_ipp_opcao
+--         FOREIGN KEY (opcao_personalizacao_id)
+--         REFERENCES opcao_personalizacao(opcao_personalizacao_id),
+--     CONSTRAINT fk_ipp_promocao
+--         FOREIGN KEY (promocao_id) REFERENCES promocao(promocao_id)
+-- );
+
+-- AVALIACAO PRODUTO
+-- CREATE TABLE avaliacao_produto (
+--     avaliacao_id INT PRIMARY KEY,
+--     cliente_id INT NOT NULL,
+--     produto_id INT NOT NULL,
+--     nota INT NOT NULL,
+--     comentario TEXT,
+--     data_avaliacao DATE NOT NULL,
+--     CONSTRAINT fk_avaliacao_cliente
+--         FOREIGN KEY (cliente_id) REFERENCES cliente(cliente_id),
+--     CONSTRAINT fk_avaliacao_produto
+--         FOREIGN KEY (produto_id) REFERENCES produto(produto_id),
+--     CONSTRAINT ck_nota CHECK (nota BETWEEN 1 AND 5)
+-- );
+
+-- PAGAMENTO
+-- CREATE TABLE pagamento (
+--     pagamento_id INT PRIMARY KEY,
+--     pedido_id INT NOT NULL UNIQUE,
+--     forma_pagamento VARCHAR(30) NOT NULL,
+--     status_pagamento VARCHAR(30) NOT NULL,
+--     valor_pago NUMERIC(10,2) NOT NULL CHECK (valor_pago >= 0),
+--     data_pagamento TIMESTAMP,
+--     CONSTRAINT fk_pagamento_pedido
+--         FOREIGN KEY (pedido_id) REFERENCES pedido(pedido_id)
+-- );
+
+-- ENVIO
+-- CREATE TABLE envio (
+--     envio_id INT PRIMARY KEY,
+--     pedido_id INT NOT NULL UNIQUE,
+--     transportadora VARCHAR(100) NOT NULL,
+--     codigo_rastreio VARCHAR(50),
+--     status_envio VARCHAR(30) NOT NULL,
+--     data_postagem DATE,
+--     data_entrega_prevista DATE,
+--     data_entrega_real DATE,
+--     CONSTRAINT fk_envio_pedido
+--         FOREIGN KEY (pedido_id) REFERENCES pedido(pedido_id)
+-- );
+
